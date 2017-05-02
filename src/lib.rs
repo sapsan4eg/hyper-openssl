@@ -88,8 +88,15 @@ impl OpensslClient {
     ///
     /// If certificate verification has been disabled in the `SslConnector`, verification must be
     /// additionally disabled here for that setting to take effect.
-    pub fn danger_disable_hostname_verification(&mut self, disable_verification: bool) {
-        self.disable_verification = disable_verification;
+    pub fn danger_with_disable_hostname_verification() -> Result<OpensslClient, ErrorStack> {
+        let mut connector = try!(SslConnectorBuilder::new(SslMethod::tls()));
+        connector.builder_mut().set_verify(ssl::SSL_VERIFY_NONE);
+        let connector = connector.build();
+        Ok(OpensslClient {
+            connector: connector,
+            disable_verification: true,
+            session_cache: Arc::new(Mutex::new(HashMap::new())),
+        })
     }
 }
 
